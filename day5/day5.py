@@ -1,39 +1,48 @@
-def readInput():
-    data = open('input.txt', 'r').read()
-    program = list(map(lambda x: int(x), data.split(',')))
-    return program
+def read_input(filename):
+    with open(filename, 'r') as f:
+        return [int(x.strip()) for x in f.read().split(',')]
 
-def intcodeComputer(program, mode=0):
+def read(program, ind, mode):
     if mode == 0:
-        ind = 0
-        while ind < len(program):
-            if program[ind] == 99:
-                return program
-            if program[ind] == 1:
-                program[program[ind+3]] = program[program[ind+1]] + program[program[ind+2]]
-                ind += 4
-            elif program[ind] == 2:
-                program[program[ind+3]] = program[program[ind+1]] * program[program[ind+2]]
-                ind += 4
-            elif program[ind] == 3:
-                program[program[ind+1]] = 0 # change 0 for some input given
-                print('Not fully implemented')
-                ind += 2
-            elif program[ind] == 4:
-                output = program[ind+1]
-                ind += 2
-            else:
-                print('Faulty command, exiting...')
-                break
-        return program
-    elif mode == 1:
-        print('not implemented')
-        return program
-    else:
-        print('invalid mode')
-        return program
+        return program[program[ind]]
+    return program[ind]
 
+def run(program, input):
+    ind = 0
+    out = 0
+    while ind < len(program) and program[ind] != 99:
+        mode, val = program[ind] // 100, program[ind] % 100
+        match val:
+            case 1:
+                # Addition
+                program[program[ind+3]] = read(program, ind+1, mode%10) + read(program, ind+2, mode//10)
+                ind += 4
+            case 2:
+                # Multiplication
+                program[program[ind+3]] = read(program, ind+1, mode%10) * read(program, ind+2, mode//10)
+                ind += 4
+            case 3:
+                # Input
+                program[program[ind+1]] = input
+                ind += 2
+            case 4:
+                # Output
+                out = read(program, ind+1, mode%10)
+                if out != 0:
+                    return out
+                ind += 2
+            case _:
+                break
+    return out
+
+def part1(program):
+    return run(program, 1)
+
+def part2(program):
+    return -1
 
 if __name__ == '__main__':
-    program = readInput()
-
+    program = read_input('input.txt')
+    # program = read_input('example.txt')
+    print(part1(program.copy()))
+    print(part2(program))
