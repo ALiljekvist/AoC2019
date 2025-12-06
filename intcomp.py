@@ -1,22 +1,45 @@
 
 class IntComp:
-    def __init__(self, program, inputs):
+    def __init__(self, program, inputs=[]):
         self.program = program[:]
+        self.ind = 0
+        self.memory = {}
         self.inputs = inputs
         self.halted = False
-        self.ind = 0
+        self.relative_base = 0
 
     def add_input(self, new_inputs):
         self.inputs += new_inputs
 
     def read(self, ind, mode):
-        val = self.program[ind]
+        addr = self.program[ind]
         if mode == 1:
-            return val
-        return self.program[val]
+            # Immediate mode, return the value directly
+            return addr
+        if mode == 2:
+            # Relative mode, add the base to the value
+            addr += self.relative_base
+        # Choose the correct part of the memory to read from
+        if addr < len(self.program):
+            return self.program[addr]
+        return self.memory.get(addr, 0)
 
-    def write(self, ind, val):
-        self.program[ind] = val
+    def write(self, ind, val, mode):
+        if mode == 2:
+            ind += self.relative_base
+        # Choose the correct part of the memory to write to
+        if ind < len(self.program):
+            self.program[ind] = val
+            return
+        self.memory[ind] = val
+
+    def run_until_halted(self):
+        out = -1
+        while not self.halted:
+            new_out = self.run()
+            if not self.halted:
+                out = new_out
+        return out
 
     def run(self, continue_on_zero=False):
         out = 0
@@ -29,20 +52,20 @@ class IntComp:
                     a = self.read(ind+1, mode%10)
                     b = self.read(ind+2, (mode//10)%10)
                     out = self.program[ind+3]
-                    self.write(out, a + b)
+                    self.write(out, a + b, (mode//100)%10)
                     self.ind += 4
                 case 2:
                     # Multiplication
                     a = self.read(ind+1, mode%10)
                     b = self.read(ind+2, (mode//10)%10)
                     out = self.program[ind+3]
-                    self.write(out, a * b)
+                    self.write(out, a * b, (mode//100)%10)
                     self.ind += 4
                 case 3:
                     # Input
                     inp = self.inputs.pop(0)
                     out = self.program[ind+1]
-                    self.write(out, inp)
+                    self.write(out, inp, mode%10)
                     self.ind += 2
                 case 4:
                     # Output
@@ -74,7 +97,7 @@ class IntComp:
                     val = 0
                     if a < b:
                         val = 1
-                    self.write(out, val)
+                    self.write(out, val, (mode//100)%10)
                     self.ind += 4
                 case 8:
                     # Equals
@@ -84,8 +107,13 @@ class IntComp:
                     val = 0
                     if a == b:
                         val = 1
-                    self.write(out, val)
+                    self.write(out, val, (mode//100)%10)
                     self.ind += 4
+                case 9:
+                    # Update relative base
+                    val = self.read(ind+1, mode%10)
+                    self.relative_base += val
+                    self.ind += 2
                 case 99:
                     self.halted = True
                     break
