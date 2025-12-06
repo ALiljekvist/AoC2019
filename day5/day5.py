@@ -1,48 +1,37 @@
+import sys
+
+sys.path.insert(0, "../")
+from intcomp import run
+
 def read_input(filename):
     with open(filename, 'r') as f:
         return [int(x.strip()) for x in f.read().split(',')]
 
-def read(program, ind, mode):
-    if mode == 0:
-        return program[program[ind]]
-    return program[ind]
-
-def run(program, input):
-    ind = 0
-    out = 0
-    while ind < len(program) and program[ind] != 99:
-        mode, val = program[ind] // 100, program[ind] % 100
-        match val:
-            case 1:
-                # Addition
-                program[program[ind+3]] = read(program, ind+1, mode%10) + read(program, ind+2, mode//10)
-                ind += 4
-            case 2:
-                # Multiplication
-                program[program[ind+3]] = read(program, ind+1, mode%10) * read(program, ind+2, mode//10)
-                ind += 4
-            case 3:
-                # Input
-                program[program[ind+1]] = input
-                ind += 2
-            case 4:
-                # Output
-                out = read(program, ind+1, mode%10)
-                if out != 0:
-                    return out
-                ind += 2
-            case _:
-                break
-    return out
-
 def part1(program):
-    return run(program, 1)
+    return run(program, 1, continue_on_zero=True)
 
 def part2(program):
-    return -1
+    return run(program, 5)
 
 if __name__ == '__main__':
     program = read_input('input.txt')
-    # program = read_input('example.txt')
     print(part1(program.copy()))
+    # ex = [3,9,8,9,10,9,4,9,99,-1,8]
+    # print(run(ex, 8) == 1)
+    # print(run(ex, 0) == 0)
+    # ex = [3,9,7,9,10,9,4,9,99,-1,8]
+    # print(run(ex, 7) == 1)
+    # print(run(ex, 8) == 0)
+    # ex = [3,3,1108,-1,8,3,4,3,99]
+    # print(run(ex, 8) == 1)
+    # print(run(ex, 0) == 0)
+    # ex = [3,3,1107,-1,8,3,4,3,99]
+    # print(run(ex, 7) == 1)
+    # print(run(ex, 8) == 0)
+    # ex = [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9]
+    # print(run(ex, 0) == 1)
+    # print(run(ex, 8) == 0)
+    # ex = [3,3,1105,-1,9,1101,0,0,12,4,12,99,1]
+    # print(run(ex, 0) == 1)
+    # print(run(ex, 8) == 0)
     print(part2(program))

@@ -1,3 +1,4 @@
 */*.txt
 **/target/**
 env/*
+__pycache__
