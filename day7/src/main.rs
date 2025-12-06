@@ -37,6 +37,22 @@ fn create_combinations() -> Vec<Vec<i64>> {
     return combinations;
 }
 
+fn find_max_out(code: &Vec<i64>, combinations: &Vec<Vec<i64>>) -> i64 {
+    let mut result: i64 = 0;
+    for comb in combinations.iter() {
+        let mut res: i64 = 0;
+        for num in comb.iter() {
+            let input: Vec<i64> = vec![*num, res]; 
+            let res_i = run_code(code.clone(), input);
+            res = res_i;
+            if res > result {
+                result = res;
+            }
+        }
+    }
+    return result
+}
+
 fn main() {
     let int_code: Vec<i64> = fs::read_to_string("input.txt")
                             .unwrap()
@@ -45,19 +61,6 @@ fn main() {
                             .filter(|x| !x.is_empty())
                             .map(|x| x.parse::<i64>().unwrap()).collect();
     let combinations: Vec<Vec<i64>> = create_combinations();
-    let mut result: i64 = 0;
-    for comb in combinations.iter() {
-        let mut res: i64 = 0;
-        let mut amplifiers: Vec<Vec<i64>> = Vec::new();
-        for num in comb.iter() {
-            let input: Vec<i64> = vec![*num, res]; 
-            let (res_i, mem) = run_code(int_code.clone(), input);
-            res = res_i;
-            amplifiers.push(mem);
-            if res > result {
-                result = res;
-            }
-        }
-    }
-    println!("Maximum result: {}",  result);
+    let p1 = find_max_out(&int_code, &combinations);
+    println!("{}", p1);
 }

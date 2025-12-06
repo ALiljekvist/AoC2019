@@ -1,7 +1,7 @@
 import sys
 
 sys.path.insert(0, "../")
-from intcomp import run
+from intcomp import IntComp
 
 def read_input(filename):
     with open(filename, 'r') as f:
@@ -10,8 +10,9 @@ def read_input(filename):
 def part1(program):
     program[1] = 12
     program[2] = 2
-    run(program)
-    return program[0]
+    comp = IntComp(program, [])
+    comp.run()
+    return comp.program[0]
 
 def part2(program):
     for i in range(100):
@@ -19,8 +20,9 @@ def part2(program):
             test_program = program.copy()
             test_program[1] = i
             test_program[2] = j
-            run(test_program)
-            if test_program[0] == 19690720:
+            comp = IntComp(test_program, [])
+            comp.run()
+            if comp.program[0] == 19690720:
                 return 100*i + j
     return -1
 

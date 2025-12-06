@@ -1,4 +1,4 @@
-pub fn run_code(mut code: Vec<i64>, user_input: Vec<i64>) -> (i64, Vec<i64>) {
+pub fn run_code(mut code: Vec<i64>, user_input: Vec<i64>) -> i64 {
     let mut i: usize = 0;
     let mut j: usize = 0;
     while i < code.len() {
@@ -38,9 +38,7 @@ pub fn run_code(mut code: Vec<i64>, user_input: Vec<i64>) -> (i64, Vec<i64>) {
         else if opcode == 4 {
             let mode = instruction % 10;
             let val = if mode == 1 {code[i+1]} else if mode == 0 {code[code[i+1] as usize]} else {panic!("faulty mode2: {}", mode)};
-            return (val, code);
-            // println!("Opcode 4, printout value: {} \t (i = {})", result, i);
-            // i = i + 2;
+            return val;
         }
         else if opcode == 5 {
             let mode1 = instruction % 10;
@@ -92,5 +90,5 @@ pub fn run_code(mut code: Vec<i64>, user_input: Vec<i64>) -> (i64, Vec<i64>) {
             panic!("Faulty opcode {}", opcode);
         }
     }
-    return (0, code);
+    return 0;
 }
