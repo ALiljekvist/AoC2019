@@ -1,10 +1,10 @@
 
 class IntComp:
-    def __init__(self, program, inputs=[]):
+    def __init__(self, program, inputs=None):
         self.program = program[:]
         self.ind = 0
         self.memory = {}
-        self.inputs = inputs
+        self.inputs = inputs if inputs is not None else []
         self.halted = False
         self.relative_base = 0
 
