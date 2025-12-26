@@ -1,15 +1,19 @@
 
 class IntComp:
-    def __init__(self, program, inputs=None):
+    def __init__(self, program, inputs=None, input_func=None):
         self.program = program[:]
         self.ind = 0
         self.memory = {}
         self.inputs = inputs if inputs is not None else []
         self.halted = False
         self.relative_base = 0
+        self.input_func = input_func if input_func is not None else self.default_input
 
     def add_input(self, new_inputs):
         self.inputs += new_inputs
+
+    def default_input(self):
+        return self.inputs.pop(0)
 
     def read(self, ind, mode):
         addr = self.program[ind]
@@ -63,7 +67,7 @@ class IntComp:
                     self.ind += 4
                 case 3:
                     # Input
-                    inp = self.inputs.pop(0)
+                    inp = self.input_func()
                     out = self.program[ind+1]
                     self.write(out, inp, mode%10)
                     self.ind += 2
