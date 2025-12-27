@@ -1,4 +1,3 @@
-
 class IntComp:
     def __init__(self, program, inputs=None, input_func=None):
         self.program = program[:]
@@ -8,6 +7,15 @@ class IntComp:
         self.halted = False
         self.relative_base = 0
         self.input_func = input_func if input_func is not None else self.default_input
+
+    def copy(self):
+        new_comp = IntComp(self.program[:])
+        new_comp.ind = self.ind
+        new_comp.memory = self.memory.copy()
+        new_comp.inputs = self.inputs.copy()
+        new_comp.halted = self.halted
+        new_comp.relative_base = self.relative_base
+        return new_comp
 
     def add_input(self, new_inputs):
         self.inputs += new_inputs
