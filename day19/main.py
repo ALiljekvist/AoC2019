@@ -3,10 +3,6 @@ import sys
 sys.path.insert(0, "../")
 from intcomp import IntComp
 
-class RobotX:
-    def __init__(self):
-        return
-
 def read_input(filename):
     with open(filename, 'r') as f:
         return [int(x.strip()) for x in f.read().split(',')]
