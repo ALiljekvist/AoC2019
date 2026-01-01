@@ -16,6 +16,8 @@ def read_grid(comp):
     row = []
     while not comp.halted:
         out = comp.run()
+        if out is None:
+            continue
         match out:
             case 35:
                 row.append(1)

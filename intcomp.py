@@ -7,6 +7,7 @@ class IntComp:
         self.halted = False
         self.relative_base = 0
         self.input_func = input_func if input_func is not None else self.default_input
+        self.out = None
 
     def copy(self):
         new_comp = IntComp(self.program[:])
@@ -53,84 +54,86 @@ class IntComp:
                 out = new_out
         return out
 
-    def run(self, continue_on_zero=False):
-        out = 0
-        while self.ind < len(self.program):
-            ind = self.ind
-            mode, op = self.program[ind] // 100, self.program[ind] % 100
-            match op:
-                case 1:
-                    # Addition
-                    a = self.read(ind+1, mode%10)
-                    b = self.read(ind+2, (mode//10)%10)
-                    out = self.program[ind+3]
-                    self.write(out, a + b, (mode//100)%10)
-                    self.ind += 4
-                case 2:
-                    # Multiplication
-                    a = self.read(ind+1, mode%10)
-                    b = self.read(ind+2, (mode//10)%10)
-                    out = self.program[ind+3]
-                    self.write(out, a * b, (mode//100)%10)
-                    self.ind += 4
-                case 3:
-                    # Input
-                    inp = self.input_func()
-                    out = self.program[ind+1]
-                    self.write(out, inp, mode%10)
-                    self.ind += 2
-                case 4:
-                    # Output
-                    out = self.read(ind+1, mode%10)
-                    self.ind += 2
-                    if not continue_on_zero:
-                        return out
-                case 5:
-                    # Jump if true
-                    a = self.read(ind+1, mode%10)
-                    b = self.read(ind+2, (mode//10)%10)
-                    if a != 0:
-                        self.ind = b
-                    else:
-                        self.ind += 3
-                case 6:
-                    # Jump if false
-                    a = self.read(ind+1, mode%10)
-                    b = self.read(ind+2, (mode//10)%10)
-                    if a == 0:
-                        self.ind = b
-                    else:
-                        self.ind += 3
-                case 7:
-                    # Less than
-                    a = self.read(ind+1, mode%10)
-                    b = self.read(ind+2, (mode//10)%10)
-                    out = self.program[ind+3]
-                    val = 0
-                    if a < b:
-                        val = 1
-                    self.write(out, val, (mode//100)%10)
-                    self.ind += 4
-                case 8:
-                    # Equals
-                    a = self.read(ind+1, mode%10)
-                    b = self.read(ind+2, (mode//10)%10)
-                    out = self.program[ind+3]
-                    val = 0
-                    if a == b:
-                        val = 1
-                    self.write(out, val, (mode//100)%10)
-                    self.ind += 4
-                case 9:
-                    # Update relative base
-                    val = self.read(ind+1, mode%10)
-                    self.relative_base += val
-                    self.ind += 2
-                case 99:
-                    self.halted = True
-                    break
-                case _:
-                    print(f"INVALID OP CODE {op}")
-                    print(ind)
-                    quit()
-        return out
+    def run(self):
+        self.out = None
+        while not self.halted:
+            self.tick()
+            if self.out is not None:
+                break
+        return self.out
+
+    def tick(self):
+        ind = self.ind
+        mode, op = self.program[ind] // 100, self.program[ind] % 100
+        match op:
+            case 1:
+                # Addition
+                a = self.read(ind+1, mode%10)
+                b = self.read(ind+2, (mode//10)%10)
+                out = self.program[ind+3]
+                self.write(out, a + b, (mode//100)%10)
+                self.ind += 4
+            case 2:
+                # Multiplication
+                a = self.read(ind+1, mode%10)
+                b = self.read(ind+2, (mode//10)%10)
+                out = self.program[ind+3]
+                self.write(out, a * b, (mode//100)%10)
+                self.ind += 4
+            case 3:
+                # Input
+                inp = self.input_func()
+                out = self.program[ind+1]
+                self.write(out, inp, mode%10)
+                self.ind += 2
+            case 4:
+                # Output
+                out = self.read(ind+1, mode%10)
+                self.out = out
+                self.ind += 2
+            case 5:
+                # Jump if true
+                a = self.read(ind+1, mode%10)
+                b = self.read(ind+2, (mode//10)%10)
+                if a != 0:
+                    self.ind = b
+                else:
+                    self.ind += 3
+            case 6:
+                # Jump if false
+                a = self.read(ind+1, mode%10)
+                b = self.read(ind+2, (mode//10)%10)
+                if a == 0:
+                    self.ind = b
+                else:
+                    self.ind += 3
+            case 7:
+                # Less than
+                a = self.read(ind+1, mode%10)
+                b = self.read(ind+2, (mode//10)%10)
+                out = self.program[ind+3]
+                val = 0
+                if a < b:
+                    val = 1
+                self.write(out, val, (mode//100)%10)
+                self.ind += 4
+            case 8:
+                # Equals
+                a = self.read(ind+1, mode%10)
+                b = self.read(ind+2, (mode//10)%10)
+                out = self.program[ind+3]
+                val = 0
+                if a == b:
+                    val = 1
+                self.write(out, val, (mode//100)%10)
+                self.ind += 4
+            case 9:
+                # Update relative base
+                val = self.read(ind+1, mode%10)
+                self.relative_base += val
+                self.ind += 2
+            case 99:
+                self.halted = True
+            case _:
+                print(f"INVALID OP CODE {op}")
+                print(ind)

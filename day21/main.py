@@ -21,7 +21,7 @@ class SpringDroid:
         dmg = 0
         while not self.comp.halted:
             out = self.comp.run()
-            if out == 0:
+            if out is None:
                 break
             dmg = out
         return dmg
@@ -48,7 +48,7 @@ class SpringDroid:
         dmg = 0
         while not self.comp.halted:
             out = self.comp.run()
-            if out == 0:
+            if out is None:
                 break
             dmg = out
         return dmg

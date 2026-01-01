@@ -34,7 +34,7 @@ class Game:
                 self.board = (x, y)
             self.grid[y][x] = val
             x, y, val = self.read_next()
-        if val > self.score:
+        if val is not None and val > self.score:
             # Apparently the program ends with setting the score to 0
             self.score = val
 

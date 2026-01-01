@@ -9,7 +9,7 @@ def read_input(filename):
 
 def part1(program):
     comp = IntComp(program, [1])
-    return comp.run(continue_on_zero=True)
+    return comp.run_until_halted()
 
 def part2(program):
     comp = IntComp(program, [5])
