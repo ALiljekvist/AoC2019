@@ -8,15 +8,15 @@ def read_input(filename):
 
 def parse_grid(data):
     grid = dict()
-    start = (0,0)
+    starts = []
     for r, row in enumerate(data):
         for c, val in enumerate(row):
             if val == '#':
                 continue
             if val == '@':
-                start = (r, c)
+                starts.append((r,c))
             grid[(r, c)] = val
-    return grid, start
+    return grid, starts
 
 def map_grid(grid):
     starts = [pos for pos, v in grid.items() if v != '.']
@@ -46,11 +46,11 @@ def put_in_queue(state, queue):
         i += 1
     queue.insert(i, state)
 
-def get_next(hist, mappings, grid):
+def get_next(at, hist, mappings, grid):
     keys = set([grid[x].lower() for x in hist if grid[x].isalpha()])
     next_options = []
     considered = set()
-    explore = [(0, hist[-1])]
+    explore = [(0, at)]
     while explore:
         steps, curr = explore.pop(0)
         if curr in considered:
@@ -81,7 +81,7 @@ def find_shortest_dfs(hist, mappings, grid, all_keys, cache):
     if hashed in cache:
         return cache[hashed]
     min_steps = 100000000
-    for (new_steps, pos) in get_next(hist, mappings, grid):
+    for (new_steps, pos) in get_next(hist[-1], hist, mappings, grid):
         hist.append(pos)
         steps = new_steps + find_shortest_dfs(hist, mappings, grid, all_keys, cache)
         hist.pop()
@@ -94,9 +94,44 @@ def part1(start, mappings, grid):
     all_keys = len(set([grid[x].lower() for x in mappings.keys() if grid[x].isalpha()]))
     return find_shortest_dfs([start], mappings, grid, all_keys, {})
 
+def to_hash_p2(positions, keys):
+    return ''.join([f'({p[0]},{p[1]})' for p in positions]) + ''.join(sorted(list(keys)))
+
+def find_shortest_dfs_p2(positions, hist, mappings, grid, all_keys, cache):
+    keys = set([grid[x].lower() for x in hist if grid[x].isalpha()])
+    if len(keys) >= all_keys:
+        return 0
+    hashed = to_hash_p2(positions, keys)
+    if hashed in cache:
+        return cache[hashed]
+    min_steps = 100000000
+    for i in range(len(positions)):
+        pos = positions[i]
+        for (new_steps, new_pos) in get_next(pos, hist, mappings, grid):
+            hist.append(new_pos)
+            positions[i] = new_pos
+            steps = new_steps + find_shortest_dfs_p2(positions, hist, mappings, grid, all_keys, cache)
+            positions[i] = pos
+            hist.pop()
+            if steps < min_steps:
+                min_steps = steps
+    cache[hashed] = min_steps
+    return min_steps
+
+def part2(positions, mappings, grid):
+    all_keys = len(set([grid[x].lower() for x in mappings.keys() if grid[x].isalpha()]))
+    return find_shortest_dfs_p2(positions, positions.copy(), mappings, grid, all_keys, {})
+
 if __name__ == '__main__':
     data = read_input('input.txt')
     # data = read_input('example.txt')
-    grid, start = parse_grid(data)
+    grid, positions = parse_grid(data)
+    start = positions[0]
     mappings = map_grid(grid)
     print(part1(start, mappings, grid))
+    data[start[0]-1] = data[start[0]-1][:start[1]-1] + '@#@' + data[start[0]-1][start[1]+2:]
+    data[start[0]] = data[start[0]][:start[1]-1] + '###' + data[start[0]][start[1]+2:]
+    data[start[0]+1] = data[start[0]+1][:start[1]-1] + '@#@' + data[start[0]+1][start[1]+2:]
+    grid, positions = parse_grid(data)
+    mappings = map_grid(grid)
+    print(part2(positions, mappings, grid))
