@@ -130,17 +130,65 @@ def print_grid(grid, droid):
             row += '.'
         print(row)
 
+def split_into_parts(path, parts):
+    if len(parts) > 3:
+        return False
+    if len(path) == 0:
+        return True
+    l = 2
+    while len(','.join(path[:l])) <= 20 and l < len(path):
+        mod_path = path.copy()
+        window = mod_path[:l]
+        i = 0
+        while i < len(mod_path) - l + 1:
+            matches = True
+            for j in range(l):
+                if mod_path[i+j] != window[j]:
+                    matches = False
+                    break
+            if matches:
+                for _ in range(l):
+                    mod_path.pop(i)
+            else:
+                i += 1
+        parts.append(window)
+        if split_into_parts(mod_path, parts):
+            return True
+        parts.pop()
+        l += 1
+    return False
+
+def find_order(path, parts):
+    order = []
+    joined_path = ''.join(path)
+    joined_parts = [''.join(p) for p in parts]
+    while joined_path:
+        for i, p in enumerate(joined_parts):
+            if joined_path.startswith(p):
+                match i:
+                    case 0:
+                        order.append('A')
+                    case 1:
+                        order.append('B')
+                    case 2:
+                        order.append('C')
+                joined_path = joined_path[len(p):]
+                break
+    return order
+
 def part2(grid, droid: ScaffoldingRobot):
     droid.wake_up()
-    # print_grid(grid, droid)
     path = droid.find_way(grid)
-    # print(','.join(path))
-    # Manually found the subroutines from printing the path
+    # Split the path into sub-parts
+    parts = []
+    if not split_into_parts(path, parts):
+        return "FAILED to split into parts"
+    # Figure out the order of the parts
+    order = find_order(path, parts)
     instructions = []
-    instructions.append("A,B,A,C,B,C,B,A,C,B\n")
-    instructions.append("L,6,R,8,R,12,L,6,L,8\n")
-    instructions.append("L,10,L,8,R,12\n")
-    instructions.append("L,8,L,10,L,6,L,6\n")
+    instructions.append(','.join(order)+'\n')
+    for part in parts:
+        instructions.append(','.join(part)+'\n')
     instructions.append("n\n")
     return droid.run(instructions)
 
